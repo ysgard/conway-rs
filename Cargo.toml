@@ -5,4 +5,4 @@ authors = ["Jan Van Uytven <jvanuytven@change.org>"]
 
 [dependencies]
 tcod = "0.12"
-
+time = "0.1.40"

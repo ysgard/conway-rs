@@ -6,11 +6,14 @@ use tcod::input;
 use tcod::colors as color;
 use tcod::noise;
 
+use std::thread;
+use std::time::{Duration, Instant};
+
 const MAP_WIDTH: usize = 300;
 const MAP_HEIGHT: usize = 80;
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 40;
-const FPS: i32 = 30;
+const FPS: i32 = 25;
 
 // Chosen purely because it looks good
 const NOISE_VERT: f32 = 12.0;
@@ -207,11 +210,16 @@ fn main() {
     // Clamp FPS
     system::set_fps(FPS);
 
-    // Allow the user to customize the initial map
+    // Declare game loop variables;
     let mut game_state = GameState::Initializing;
+    let frame_time = Duration::from_millis(1000 / (FPS as u64));
+    
 
     // Main loop
     while game_state != GameState::Ending && !root.window_closed() {
+
+        let start_time = Instant::now();
+        
         display_map(&mut root, &map);
         root.flush();
   
@@ -232,11 +240,16 @@ fn main() {
                     input::Event::Mouse(ref mouse_state) => {
                         let x = mouse_state.cx as i32 + map.o_x;
                         let y = mouse_state.cy as i32 + map.o_y;
-                        if mouse_state.lbutton_pressed { map.toggle(x, y) };
-                    }
+                        if mouse_state.lbutton_pressed { map.toggle(x, y) };                    }
                 }
             }
         }
         if game_state == GameState::Running { map.tick() }
+
+        // Wait until a full frame time has elapsed
+        let time_diff = start_time.elapsed();
+        if time_diff < frame_time {
+            thread::sleep(frame_time - time_diff);
+        }
     }
 }
